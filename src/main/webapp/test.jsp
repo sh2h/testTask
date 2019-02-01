@@ -2,7 +2,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 <%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
-<%@ taglib prefix="from" uri="http://www.springframework.org/tags/form" %>
 
 <html>
 <head>
@@ -23,6 +22,7 @@
     </div>
 </form:form>
 
+    <c:set var="number" value="${(page-1)*10+1}" scope="page"/>
 
     <c:if test="${!empty seachData}">
         <div class="alert alert-success" role="alert"><p class="text-center"> ${seachData}</p></div>
@@ -43,7 +43,7 @@
 <div class="container-fluid">
         <table class="table table-striped" style="margin: 5px;">
             <tr >
-                <th class="col-sm-2" >ID</th>
+                <th class="col-sm-2" >№</th>
                 <th class="col-sm-2" >Наименование</th>
                 <th class="col-sm-2" >Количество</th>
                 <th class="col-sm-2" >Необходимость</th>
@@ -52,7 +52,8 @@
             </tr>
             <c:forEach items="${details}" var="detail">
                 <tr >
-                    <td class="col-sm-2">${detail.id}</td>
+                    <td class="col-sm-2">${number}</td>
+                    <c:set  var="number" value="${number+1}" scope="page"/>
                     <td  class="col-sm-2">${detail.name}</td>
                     <td  class="col-sm-2">${detail.count}</td>
                     <td  class="col-sm-2">${detail.necessary==true?"да":"нет"}</td>
@@ -94,7 +95,7 @@
     <p class="text-center">Можно собрать ${canBuild} компьютеров.</p>
     </div>
 
-    <div id="addForm" ><form:form action="/add" commandName="updateDetail">
+    <div id="addForm" ><form:form action="/add#addForm" commandName="updateDetail">
 
                         <form:hidden path="id"/>
         <div class="form-group row">
@@ -104,11 +105,18 @@
             </div>
         </div>
 
+        <div class="text-center alert-danger">
+            <form:errors path="name"/>
+        </div>
+
         <div class="form-group row">
             <label for="countDet" class="col-sm-offset-2 col-sm-2 c col-form-label "  path="count">Количество</label>
             <div class="col-sm-6">
             <form:input id="countDet" class="form-control" path="count"/>
             </div>
+        </div>
+        <div class="text-center alert-danger">
+            <form:errors path="count" />
         </div>
         <div class="form-check ">
             <div class="col-sm-offset-5 col-sm-2">

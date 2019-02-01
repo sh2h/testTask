@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 @Repository
@@ -33,36 +36,40 @@ public class DaoDetailImpl  implements DaoDetail{
     }
 
     public List<Detail> getDetailsByFilterAndPage(Filters filter, int page,int pageCount) {
-        Query query;
-        switch (filter){
-            case necessary:
-                query=em.createQuery("select d from Detail d where d.necessary=true ");
-
-                break;
-            case optional:
-                query=em.createQuery("select d from Detail d where d.necessary=false");
-                break;
-            default:
-                query=em.createQuery("select d from Detail d");
-        }
         if(page==0)
             return new ArrayList<Detail>();
-        return query.setFirstResult(pageCount*(page-1)).setMaxResults(pageCount).getResultList();
+        CriteriaBuilder cb=em.getCriteriaBuilder();
+        CriteriaQuery cq=cb.createQuery(Detail.class);
+        Root<Detail> d=cq.from(Detail.class);
+        cq=cq.select(d);
+        switch (filter){
+            case necessary:
+                cq=cq.where(cb.equal(d.get("necessary"),false));
+                break;
+            case optional:
+                cq=cq.where(cb.equal(d.get("necessary"),false));
+                break;
+            default:
+        }
+        return em.createQuery(cq).setFirstResult(pageCount*(page-1)).setMaxResults(pageCount).getResultList();
     }
 
     public int getMaxPage(Filters filter,int pageCount) {
         Query query;
+        CriteriaBuilder cb=em.getCriteriaBuilder();
+        CriteriaQuery cq=cb.createQuery(Detail.class);
+        Root<Detail> d=cq.from(Detail.class);
+        cq=cq.select(cb.count(d));
         switch (filter){
             case necessary:
-                query=em.createQuery("select count(d.id) from Detail d where d.necessary=true ");
+                cq=cq.where(cb.equal(d.get("necessary"),false));
                 break;
             case optional:
-                query=em.createQuery("select count(d.id) from Detail d where d.necessary=false");
+                cq=cq.where(cb.equal(d.get("necessary"),false));
                 break;
             default:
-                query=em.createQuery("select count(d.id) from Detail d");
         }
-        long countResult= (Long)query.getResultList().get(0);
+        long countResult= (Long)em.createQuery(cq).getResultList().get(0);
         if(countResult==0)
             return 0;
         int result=(int)countResult/pageCount;

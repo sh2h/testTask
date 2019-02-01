@@ -3,44 +3,35 @@ package mainPackage.source.Controllers;
 import mainPackage.source.Detail;
 import mainPackage.source.Enums.Filters;
 import mainPackage.source.dao.DaoDetail;
-import mainPackage.source.dao.DaoDetailImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller
-@Transactional
 public class MainController {
-
     @Autowired
-    DaoDetail detailDao;
+    private DaoDetail detailDao;
 
+    private static int pageCount=10;
 
     @RequestMapping(value = "/",method = RequestMethod.GET)
     public String index(Model model, HttpSession session, HttpServletRequest request){
-        int pageCount=10;
         Filters filter=getFilter(request.getParameter("filter"),session);
-
         int maxPage=detailDao.getMaxPage(filter,pageCount);
         Integer page=getPage(request.getParameter("page"),session,maxPage);
 
         List<Detail> details=detailDao.getDetailsByFilterAndPage(filter,page,pageCount);
-        model.addAttribute("details",details);
-        model.addAttribute("canBuild",detailDao.getMaxBuild());
-        model.addAttribute("maxPage",maxPage);
-
-        if(!model.containsAttribute("updateDetail")){
-            model.addAttribute("updateDetail",new Detail());
-        }
+        session.setAttribute("details",details);
+        session.setAttribute("canBuild",detailDao.getMaxBuild());
+        session.setAttribute("maxPage",maxPage);
+        model.addAttribute("updateDetail",new Detail());
         return "test";
     }
     private Integer getPage(String page,HttpSession session,int maxPage){
@@ -51,6 +42,7 @@ public class MainController {
         session.setAttribute("page",result);
         return result;
     }
+
     private int parseInt(String num){
         try {
             return Integer.parseInt(num);
@@ -71,10 +63,10 @@ public class MainController {
         return "redirect:/";
     }
     @RequestMapping(value = "/edit/{id}")
-    public String update(@PathVariable("id") Long id,Model model,HttpSession session,HttpServletRequest request){
+    public String update(@PathVariable("id") Long id,Model model){
         Detail updateDetail=detailDao.getDetailById(id);
         model.addAttribute("updateDetail",updateDetail);
-        return index(model,session,request);
+        return "test";
     }
     @RequestMapping(value = "/seach")
     public String seach(Model model,HttpSession session,HttpServletRequest request){
@@ -83,14 +75,18 @@ public class MainController {
             model.addAttribute("seachData","Компонента с данным названием нет в списке");
         else
             model.addAttribute("seachData","Найдена деталь:\t"+detail.toString());
-        return index(model,session,request);
+        model.addAttribute("updateDetail",new Detail());
+        return "test";
     }
     @RequestMapping(value = "/add",method = RequestMethod.POST)
-    public  String add(@ModelAttribute("updateDetail")Detail detail){
-        if(detail.getId() == null){
+    public  String add(@Valid @ModelAttribute("updateDetail")Detail detail, BindingResult bindingResult){
+        if(bindingResult.hasErrors()) {
+            return "test";
+        }
+        if (detail.getId() == null) {
             detailDao.addDetail(detail);
-        }else {
-           detailDao.updateDetail(detail);
+        } else {
+            detailDao.updateDetail(detail);
         }
         return "redirect:/";
     }

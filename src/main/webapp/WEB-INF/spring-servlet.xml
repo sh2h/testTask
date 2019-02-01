@@ -31,7 +31,10 @@
         <property name="password" value="root" />
     </bean>
 
-    <bean id="entityManagerFactory"
+    <bean id="myBeansValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+    <mvc:annotation-driven validator="myBeansValidator" />
+
+    <bean  id="entityManagerFactory"
           class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" >
 
         <property name="packagesToScan" value="mainPackage.source" />
@@ -44,7 +47,6 @@
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
                 <prop key="hibernate.show_sql">true</prop>
                 <prop key="hibernate.format_sql">true</prop>
-
             </props>
         </property>
     </bean>
