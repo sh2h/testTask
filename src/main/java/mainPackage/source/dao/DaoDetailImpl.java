@@ -44,7 +44,7 @@ public class DaoDetailImpl  implements DaoDetail{
         cq=cq.select(d);
         switch (filter){
             case necessary:
-                cq=cq.where(cb.equal(d.get("necessary"),false));
+                cq=cq.where(cb.equal(d.get("necessary"),true));
                 break;
             case optional:
                 cq=cq.where(cb.equal(d.get("necessary"),false));
@@ -55,14 +55,13 @@ public class DaoDetailImpl  implements DaoDetail{
     }
 
     public int getMaxPage(Filters filter,int pageCount) {
-        Query query;
         CriteriaBuilder cb=em.getCriteriaBuilder();
         CriteriaQuery cq=cb.createQuery(Detail.class);
         Root<Detail> d=cq.from(Detail.class);
         cq=cq.select(cb.count(d));
         switch (filter){
             case necessary:
-                cq=cq.where(cb.equal(d.get("necessary"),false));
+                cq=cq.where(cb.equal(d.get("necessary"),true));
                 break;
             case optional:
                 cq=cq.where(cb.equal(d.get("necessary"),false));
